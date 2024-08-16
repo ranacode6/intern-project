@@ -2,57 +2,74 @@
 
 import axios from 'axios';
 import Image from 'next/image';
-import { SyntheticEvent, useEffect, useState } from 'react';
+import Link from 'next/link';
+import { SyntheticEvent, useEffect, useState, ChangeEvent } from 'react';
+
+// Define types for data used in the component
+interface AnimalData {
+  animalName: string;
+  categoryName: string;
+  file: string;
+}
 
 export default function Home() {
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState<string>('');
   const [animalName, setAnimalName] = useState<string>('');
   const [categoryName, setCategoryName] = useState<string>('');
-  const [file, setFile] = useState(null);
-  const [allData, setAllData] = useState(null);
-  console.log(allData);
+  const [file, setFile] = useState<File | null>(null); // Use File type
+  const [allData, setAllData] = useState<AnimalData[] | null>(null); // Use AnimalData type
+
   const [addAnimalModal, setAddAnimalModal] = useState<boolean>(false);
   const [addCategoryModal, setCategoryModal] = useState<boolean>(false);
-  const toggleAddAnimalModal = () => setAddAnimalModal(!addAnimalModal);
-  const toggleAddCategoryModal = () => setCategoryModal(!addCategoryModal);
+
+  const toggleAddAnimalModal = () => setAddAnimalModal((prev) => !prev);
+  const toggleAddCategoryModal = () => setCategoryModal((prev) => !prev);
 
   const filterAnimal = async () => {
-    await axios
-      .post('http://localhost:8000/filter', { category })
-      .then((response) => {
-        setAllData(response.data.data);
-        console.log(response.data.data);
-      })
-      .catch((err) => console.log(err));
+    try {
+      const response = await axios.post<{ data: AnimalData[] }>(
+        `http://localhost:8000/filter/${category}`
+      );
+      setAllData(response.data.data);
+    } catch (err) {
+      console.error('Error filtering animals:', err);
+    }
   };
 
   const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append('animalName', animalName);
-    formData.append('categoryName', categoryName);
-    formData.append('file', file);
+    if (file) {
+      const formData = new FormData();
+      formData.append('animalName', animalName);
+      formData.append('categoryName', categoryName);
+      formData.append('file', file);
 
-    await axios
-      .post('http://localhost:8000/upload', { formData })
-      .then((response) => {
+      try {
+        const response = await axios.post<{ data: AnimalData[] }>(
+          'http://localhost:8000/upload',
+          formData
+        );
         setAllData(response.data.data);
-        console.log(response.data);
-      })
-      .catch((err) => console.log(err));
+      } catch (err) {
+        console.error('Error uploading file:', err);
+      }
+    }
   };
 
-  const getAllData = async () => {
-    const result = await axios.get('http://localhost:8000/getAllData', {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+  // const getAllData = async () => {
+  //   try {
+  //     const result = await axios.get<{ data: AnimalData[] }>(
+  //       'http://localhost:8000/getAllData'
+  //     );
+  //     setAllData(result.data.data);
+  //   } catch (err) {
+  //     console.error('Error fetching all data:', err);
+  //   }
+  // };
 
-    setAllData(result.data.data);
-  };
-
-  useEffect(() => {
-    getAllData();
-  }, []);
+  // useEffect(() => {
+  //   filterAnimal();
+  // }, []);
   return (
     <main
       className="flex flex-col min-h-screen mx-auto max-w-[1440px] pt-16 relative"
@@ -64,8 +81,8 @@ export default function Home() {
           <button
             className="focus:text-green-600 text-red-600 p-6 py-2 font-medium rounded-full border-2 border-red-600 focus:border-green-600"
             onClick={() => {
-              filterAnimal();
               setCategory('Land Animal');
+              filterAnimal();
             }}
           >
             Land Animal
@@ -73,8 +90,8 @@ export default function Home() {
           <button
             className="focus:text-green-600 text-red-600 p-6 py-2 font-medium rounded-full border-2 border-red-600 focus:border-green-600"
             onClick={() => {
-              filterAnimal();
               setCategory('Bird');
+              filterAnimal();
             }}
           >
             Bird
@@ -82,8 +99,8 @@ export default function Home() {
           <button
             className="text-red-600 focus:text-green-600 p-6 py-2 font-medium rounded-full border-2 border-red-600 focus:border-green-600"
             onClick={() => {
-              filterAnimal();
               setCategory('Fish');
+              filterAnimal();
             }}
           >
             Fish
@@ -91,8 +108,8 @@ export default function Home() {
           <button
             className="text-red-600 focus:text-green-600 p-6 py-2 font-medium rounded-full border-2 border-red-600 focus:border-green-600"
             onClick={() => {
-              filterAnimal();
               setCategory('Insect');
+              filterAnimal();
             }}
           >
             Insect
@@ -127,7 +144,9 @@ export default function Home() {
             type="text"
             placeholder="Animal Name"
             value={animalName}
-            onChange={(e) => setAnimalName(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setAnimalName(e.target.value)
+            }
             required
             className="bg-gray-200 p-2 rounded-md placeholder-gray-900 text-gray-900"
           />
@@ -137,13 +156,15 @@ export default function Home() {
             </label>
             <label
               htmlFor="files"
-              className=" text-gray-900 m-2 p-1 rounded-md ml-auto bg-zinc-300 text-center"
+              className="text-gray-900 m-2 p-1 rounded-md ml-auto bg-zinc-300 text-center"
             >
               Upload
             </label>
             <input
               type="file"
-              onChange={(e) => setFile(e.target.files[0])}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setFile(e.target.files ? e.target.files[0] : null)
+              }
               id="files"
               className="hidden"
               required
@@ -152,7 +173,7 @@ export default function Home() {
 
           <button
             className="bg-black text-white py-2 rounded-lg"
-            onClick={toggleAddAnimalModal}
+            onClick={handleSubmit}
           >
             Create Animal
           </button>
@@ -166,7 +187,9 @@ export default function Home() {
             type="text"
             placeholder="Name"
             value={categoryName}
-            onChange={(event) => setCategoryName(event.target.value)}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              setCategoryName(event.target.value)
+            }
             required
             className="bg-gray-200 p-2 rounded-md placeholder-gray-900 text-gray-900"
           />
@@ -180,34 +203,22 @@ export default function Home() {
         </div>
       )}
       <div className="flex absolute top-40 flex-wrap">
-        {allData == null
-          ? ''
-          : allData.map(
-              (
-                data: {
-                  animalName: string;
-                  categoryName: string;
-                  file: string;
-                },
-                index: number
-              ) => {
-                return (
-                  <div
-                    key={index}
-                    className="flex flex-col gap-10 items-center justify-end z-10 mr-20 mb-10"
-                  >
-                    <Image
-                      src={`/${data.file}`}
-                      alt={data.animalName}
-                      width={150}
-                      height={150}
-                      priority
-                    />
-                    <h5 className="uppercase">{data.animalName}</h5>
-                  </div>
-                );
-              }
-            )}
+        {allData &&
+          allData.map((data, index) => (
+            <div
+              key={index}
+              className="flex flex-col gap-10 items-center justify-end z-10 mr-20 mb-10"
+            >
+              <Image
+                src={`/${data.file}`}
+                alt={data.animalName}
+                width={150}
+                height={150}
+                priority
+              />
+              <h5 className="uppercase">{data.animalName}</h5>
+            </div>
+          ))}
       </div>
     </main>
   );
