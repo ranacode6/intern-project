@@ -46,9 +46,18 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
 // Get Data from MongoDB
 app.get('/getAllData', async (req, res) => {
-  const category = req.params.category;
   try {
-    await Animal.find({ categoryName: category }).then((data) =>
+    await Animal.find({}).then((data) => res.send({ status: 200, data: data }));
+  } catch (error) {
+    return res.json(error);
+  }
+});
+
+// Filter Data from MongoDB
+app.post('/filter', async (req, res) => {
+  console.log(req.body.category);
+  try {
+    await Animal.find({ categoryName: req.body.category }).then((data) =>
       res.send({ status: 200, data: data })
     );
   } catch (error) {

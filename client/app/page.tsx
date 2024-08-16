@@ -2,8 +2,7 @@
 
 import axios from 'axios';
 import Image from 'next/image';
-import Link from 'next/link';
-import { SyntheticEvent, useEffect, useState, ChangeEvent } from 'react';
+import { SyntheticEvent, useState, ChangeEvent, useEffect } from 'react';
 
 // Define types for data used in the component
 interface AnimalData {
@@ -27,8 +26,11 @@ export default function Home() {
 
   const filterAnimal = async () => {
     try {
-      const response = await axios.post<{ data: AnimalData[] }>(
-        `http://localhost:8000/filter/${category}`
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/filter`,
+        {
+          category,
+        }
       );
       setAllData(response.data.data);
     } catch (err) {
@@ -45,8 +47,8 @@ export default function Home() {
       formData.append('file', file);
 
       try {
-        const response = await axios.post<{ data: AnimalData[] }>(
-          'http://localhost:8000/upload',
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/upload`,
           formData
         );
         setAllData(response.data.data);
@@ -56,20 +58,21 @@ export default function Home() {
     }
   };
 
-  // const getAllData = async () => {
-  //   try {
-  //     const result = await axios.get<{ data: AnimalData[] }>(
-  //       'http://localhost:8000/getAllData'
-  //     );
-  //     setAllData(result.data.data);
-  //   } catch (err) {
-  //     console.error('Error fetching all data:', err);
-  //   }
-  // };
+  const getAllData = async () => {
+    const result = await axios.get(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/getAllData`,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    );
 
-  // useEffect(() => {
-  //   filterAnimal();
-  // }, []);
+    setAllData(result.data.data);
+  };
+
+  useEffect(() => {
+    getAllData();
+  }, []);
+
   return (
     <main
       className="flex flex-col min-h-screen mx-auto max-w-[1440px] pt-16 relative"
