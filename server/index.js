@@ -16,7 +16,11 @@ connectDatabase();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json({ limit: '20mb' }));
-app.use(cors());
+const corsConfig = {
+  credentials: true,
+  origin: `${process.env.CLIENT_URL}`,
+};
+app.use(cors(corsConfig));
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
