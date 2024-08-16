@@ -18,6 +18,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json({ limit: '20mb' }));
 const corsConfig = {
   credentials: true,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   origin: `${process.env.CLIENT_URL}`,
 };
 app.use(cors(corsConfig));
