@@ -213,7 +213,7 @@ export default function Home() {
               className="flex flex-col gap-10 items-center justify-end z-10 mr-20 mb-10"
             >
               <Image
-                src={`/${data.file}`}
+                src={`${process.env.NEXT_PUBLIC_SERVER_URL}/uploads/${data.file}`}
                 alt={data.animalName}
                 width={150}
                 height={150}
