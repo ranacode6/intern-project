@@ -176,7 +176,7 @@ export default function Home() {
 
           <button
             className="bg-black text-white py-2 rounded-lg"
-            onClick={handleSubmit}
+            onClick={toggleAddAnimalModal}
           >
             Create Animal
           </button>
