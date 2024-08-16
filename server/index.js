@@ -3,8 +3,6 @@ const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
 
 const connectDatabase = require('./database/db.js');
 const Animal = require('./model/animalModel.js');
@@ -14,7 +12,7 @@ dotenv.config();
 connectDatabase();
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json({ limit: '20mb' }));
 const corsConfig = {
   credentials: true,
