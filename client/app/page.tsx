@@ -15,8 +15,8 @@ export default function Home() {
   const [category, setCategory] = useState<string>('');
   const [animalName, setAnimalName] = useState<string>('');
   const [categoryName, setCategoryName] = useState<string>('');
-  const [file, setFile] = useState<File | null>(null); // Use File type
-  const [allData, setAllData] = useState<AnimalData[] | null>(null); // Use AnimalData type
+  const [file, setFile] = useState<File | null>(null);
+  const [allData, setAllData] = useState<AnimalData[] | null>(null);
 
   const [addAnimalModal, setAddAnimalModal] = useState<boolean>(false);
   const [addCategoryModal, setCategoryModal] = useState<boolean>(false);

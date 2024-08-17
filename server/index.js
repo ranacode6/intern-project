@@ -14,6 +14,7 @@ connectDatabase();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json({ limit: '20mb' }));
+app.use('/uploads', express.static('uploads'));
 const corsConfig = {
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
