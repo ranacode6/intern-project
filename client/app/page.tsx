@@ -212,13 +212,15 @@ export default function Home() {
               key={index}
               className="flex flex-col gap-10 items-center justify-end z-10 mr-20 mb-10"
             >
-              <Image
-                src={`${process.env.NEXT_PUBLIC_SERVER_URL}/uploads/${data.file}`}
-                alt={data.animalName}
-                width={150}
-                height={150}
-                priority
-              />
+              {data.file && (
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_SERVER_URL}/uploads/${data.file}`}
+                  alt={data.animalName}
+                  width={150}
+                  height={150}
+                  priority
+                />
+              )}
               <h5 className="uppercase">{data.animalName}</h5>
             </div>
           ))}
