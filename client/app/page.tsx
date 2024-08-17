@@ -218,7 +218,6 @@ export default function Home() {
                   alt={data.animalName}
                   width={150}
                   height={150}
-                  priority
                 />
               )}
               <h5 className="uppercase">{data.animalName}</h5>
