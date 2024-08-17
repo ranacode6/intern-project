@@ -7,6 +7,11 @@ const nextConfig = {
         hostname: 'localhost',
         // port: '8000',
       },
+      {
+        protocol: 'https',
+        hostname: 'intern-project-3uzm.onrender.com',
+        // port: '8000',
+      },
     ],
   },
 };
