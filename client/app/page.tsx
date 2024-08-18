@@ -2,7 +2,6 @@
 
 import axios from 'axios';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
 import { useState, ChangeEvent, useEffect } from 'react';
 
 // Define types for data used in the component
@@ -13,6 +12,7 @@ interface AnimalData {
 }
 
 export default function Home() {
+  const [active, setActive] = useState<boolean>(true);
   const [file, setFile] = useState<string>('');
   const [category, setCategory] = useState<string>('');
   const [animalName, setAnimalName] = useState<string>('');
@@ -43,6 +43,11 @@ export default function Home() {
     reader.onerror = (error) => {
       console.log('Error', error);
     };
+  };
+
+  const SelectCategory = async (e: ChangeEvent<HTMLSelectElement>) => {
+    const selectedValue = e.target.value;
+    setCategoryName(selectedValue);
   };
 
   const filterAnimal = async () => {
@@ -209,21 +214,24 @@ export default function Home() {
       {/* Modal For Add Category */}
       {addCategoryModal && (
         <div className="flex flex-col mx-auto bg-white rounded-3xl max-w-sm mt-24 p-8 gap-4 z-40">
-          <h5 className="text-gray-900 text-lg">Add Category</h5>
-          <input
-            type="text"
-            placeholder="Name"
-            value={categoryName}
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              setCategoryName(event.target.value)
-            }
-            required
-            className="bg-gray-200 p-2 rounded-md placeholder-gray-900 text-gray-900"
-          />
+          <h5 className="text-gray-900 text-lg outline-none">Add Category</h5>
+          <select
+            className="bg-gray-300 text-gray-900"
+            disabled={!active}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) => SelectCategory(e)}
+          >
+            <option value="Land Animal">Land Animal</option>
+            <option value="Bird">Bird</option>
+            <option value="Fish">Fish</option>
+            <option value="Insect">Insect</option>
+          </select>
 
           <button
             className="bg-black text-white py-2 rounded-lg"
-            onClick={handleSubmit}
+            onClick={() => {
+              handleSubmit();
+              setActive(!active);
+            }}
           >
             Save
           </button>
@@ -242,7 +250,6 @@ export default function Home() {
                   alt={data.animalName}
                   width={150}
                   height={150}
-                  priority
                 />
               )}
               <h5 className="uppercase">{data.animalName}</h5>
