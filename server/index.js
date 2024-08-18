@@ -2,7 +2,6 @@ const express = require('express');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-// const multer = require('multer');
 
 const connectDatabase = require('./database/db.js');
 const Animal = require('./model/animalModel.js');
@@ -14,24 +13,12 @@ connectDatabase();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json({ limit: '20mb' }));
-app.use('/uploads', express.static('uploads'));
 const corsConfig = {
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   origin: `${process.env.CLIENT_URL}`,
 };
 app.use(cors(corsConfig));
-
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     return cb(null, './uploads');
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueSuffix = Date.now();
-//     return cb(null, uniqueSuffix + file.originalname);
-//   },
-// });
-// const upload = multer({ storage: storage });
 
 // Post to mongodb
 app.post('/upload', async (req, res) => {
@@ -43,7 +30,7 @@ app.post('/upload', async (req, res) => {
       file: req.body.file,
     });
 
-    return res.send('message: Created Successfully');
+    return res.json({ message: 'Category Created Successfully' });
   } catch (error) {
     return res.json(error);
   }

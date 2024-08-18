@@ -2,7 +2,8 @@
 
 import axios from 'axios';
 import Image from 'next/image';
-import { SyntheticEvent, useState, ChangeEvent, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useState, ChangeEvent, useEffect } from 'react';
 
 // Define types for data used in the component
 interface AnimalData {
@@ -65,15 +66,16 @@ export default function Home() {
       formData.append('categoryName', categoryName);
       formData.append('file', file);
 
-      try {
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/upload`,
-          { animalName, categoryName, file }
-        );
-        setAllData(response.data.data);
-      } catch (err) {
-        console.error('Error uploading file:', err);
-      }
+      await axios
+        .post(`${process.env.NEXT_PUBLIC_SERVER_URL}/upload`, {
+          animalName,
+          categoryName,
+          file,
+        })
+        .then((res) => {
+          alert(res.data.message);
+          window.location.reload();
+        });
     }
   };
 
