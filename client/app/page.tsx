@@ -78,7 +78,7 @@ export default function Home() {
       className="flex flex-col min-h-screen mx-auto max-w-[1440px] pt-16 relative"
       id="mainDiv"
     >
-      <div className="flex">
+      <div className="flex flex-col lg:flex-row">
         {/* Left Section */}
         <div className="flex w-2/3 h-fit gap-10">
           <button
@@ -120,7 +120,7 @@ export default function Home() {
         </div>
 
         {/* Right Section */}
-        <div className="w-1/3 h-fit flex gap-10">
+        <div className="w-full px-2 lg:w-1/3 h-fit flex gap-10">
           <button
             className="text-white p-6 py-2 font-medium rounded-full border-2 border-white"
             onClick={toggleAddAnimalModal}

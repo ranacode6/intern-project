@@ -59,7 +59,6 @@ app.get('/getAllData', async (req, res) => {
 
 // Filter Data from MongoDB
 app.post('/filter', async (req, res) => {
-  console.log(req.body.category);
   try {
     await Animal.find({ categoryName: req.body.category }).then((data) =>
       res.send({ status: 200, data: data })
