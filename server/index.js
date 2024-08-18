@@ -2,7 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const multer = require('multer');
+// const multer = require('multer');
 
 const connectDatabase = require('./database/db.js');
 const Animal = require('./model/animalModel.js');
@@ -22,24 +22,25 @@ const corsConfig = {
 };
 app.use(cors(corsConfig));
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    return cb(null, './uploads');
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now();
-    return cb(null, uniqueSuffix + file.originalname);
-  },
-});
-const upload = multer({ storage: storage });
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     return cb(null, './uploads');
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now();
+//     return cb(null, uniqueSuffix + file.originalname);
+//   },
+// });
+// const upload = multer({ storage: storage });
 
 // Post to mongodb
-app.post('/upload', upload.single('file'), async (req, res) => {
+app.post('/upload', async (req, res) => {
+  console.log(req.body.file);
   try {
     await Animal.create({
       animalName: req.body.animalName,
       categoryName: req.body.categoryName,
-      file: req.file.filename,
+      file: req.body.file,
     });
 
     return res.send('message: Created Successfully');

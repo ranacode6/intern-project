@@ -12,10 +12,10 @@ interface AnimalData {
 }
 
 export default function Home() {
+  const [file, setFile] = useState<string>('');
   const [category, setCategory] = useState<string>('');
   const [animalName, setAnimalName] = useState<string>('');
   const [categoryName, setCategoryName] = useState<string>('');
-  const [file, setFile] = useState<File | null>(null);
   const [allData, setAllData] = useState<AnimalData[] | null>(null);
 
   const [addAnimalModal, setAddAnimalModal] = useState<boolean>(false);
@@ -23,6 +23,26 @@ export default function Home() {
 
   const toggleAddAnimalModal = () => setAddAnimalModal((prev) => !prev);
   const toggleAddCategoryModal = () => setCategoryModal((prev) => !prev);
+
+  const convertToBase64 = async (e: ChangeEvent<HTMLInputElement>) => {
+    console.log(e);
+    const image = e.target.files?.[0];
+    if (!image) {
+      console.log('no file selected');
+      return;
+    }
+    let reader = new FileReader();
+    reader.readAsDataURL(image);
+    reader.onload = () => {
+      if (reader.result && typeof reader.result === 'string') {
+        console.log(reader.result);
+        setFile(reader.result);
+      }
+    };
+    reader.onerror = (error) => {
+      console.log('Error', error);
+    };
+  };
 
   const filterAnimal = async () => {
     try {
@@ -38,8 +58,7 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = async (e: SyntheticEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (file) {
       const formData = new FormData();
       formData.append('animalName', animalName);
@@ -49,7 +68,7 @@ export default function Home() {
       try {
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_SERVER_URL}/upload`,
-          formData
+          { animalName, categoryName, file }
         );
         setAllData(response.data.data);
       } catch (err) {
@@ -65,8 +84,11 @@ export default function Home() {
         headers: { 'Content-Type': 'multipart/form-data' },
       }
     );
-
-    setAllData(result.data.data);
+    try {
+      setAllData(result.data.data);
+    } catch (error) {
+      console.log('Error getting Data', error);
+    }
   };
 
   useEffect(() => {
@@ -147,9 +169,7 @@ export default function Home() {
             type="text"
             placeholder="Animal Name"
             value={animalName}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setAnimalName(e.target.value)
-            }
+            onChange={(e) => setAnimalName(e.target.value)}
             required
             className="bg-gray-200 p-2 rounded-md placeholder-gray-900 text-gray-900"
           />
@@ -157,17 +177,19 @@ export default function Home() {
             <label htmlFor="files" className="w-full text-gray-900 p-2">
               Image
             </label>
-            <label
-              htmlFor="files"
-              className="text-gray-900 m-2 p-1 rounded-md ml-auto bg-zinc-300 text-center"
-            >
-              Upload
-            </label>
+            {file == '' || file == null ? (
+              <label
+                htmlFor="files"
+                className="text-gray-900 m-2 p-1 rounded-md ml-auto bg-zinc-300 text-center"
+              >
+                Upload
+              </label>
+            ) : (
+              <Image src={file} alt="Seclected Image" width={50} height={50} />
+            )}
             <input
               type="file"
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setFile(e.target.files ? e.target.files[0] : null)
-              }
+              onChange={convertToBase64}
               id="files"
               className="hidden"
               required
@@ -214,10 +236,11 @@ export default function Home() {
             >
               {data.file && (
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_SERVER_URL}/uploads/${data.file}`}
+                  src={data.file}
                   alt={data.animalName}
                   width={150}
                   height={150}
+                  priority
                 />
               )}
               <h5 className="uppercase">{data.animalName}</h5>
