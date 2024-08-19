@@ -12,7 +12,7 @@ interface AnimalData {
 }
 
 export default function Home() {
-  const [active, setActive] = useState<boolean>(true);
+  const categories = ['Land Animal', 'Bird', 'Fish', 'Insect'];
   const [file, setFile] = useState<string>('');
   const [category, setCategory] = useState<string>('');
   const [animalName, setAnimalName] = useState<string>('');
@@ -103,49 +103,25 @@ export default function Home() {
   }, []);
 
   return (
-    <main
-      className="flex flex-col min-h-screen mx-auto max-w-[1440px] pt-16 relative"
-      id="mainDiv"
-    >
-      <div className="flex flex-col lg:flex-row">
+    <main className="flex flex-col h-auto max-w-[1440px] relative">
+      {/* <div className="mx-auto"> */}
+      <div className="flex flex-col lg:flex-row py-12 justify-center">
         {/* Left Section */}
         <div className="flex w-2/3 h-fit gap-10">
-          <button
-            className="focus:text-green-600 text-red-600 p-6 py-2 font-medium rounded-full border-2 border-red-600 focus:border-green-600"
-            onClick={() => {
-              setCategory('Land Animal');
-              filterAnimal();
-            }}
-          >
-            Land Animal
-          </button>
-          <button
-            className="focus:text-green-600 text-red-600 p-6 py-2 font-medium rounded-full border-2 border-red-600 focus:border-green-600"
-            onClick={() => {
-              setCategory('Bird');
-              filterAnimal();
-            }}
-          >
-            Bird
-          </button>
-          <button
-            className="text-red-600 focus:text-green-600 p-6 py-2 font-medium rounded-full border-2 border-red-600 focus:border-green-600"
-            onClick={() => {
-              setCategory('Fish');
-              filterAnimal();
-            }}
-          >
-            Fish
-          </button>
-          <button
-            className="text-red-600 focus:text-green-600 p-6 py-2 font-medium rounded-full border-2 border-red-600 focus:border-green-600"
-            onClick={() => {
-              setCategory('Insect');
-              filterAnimal();
-            }}
-          >
-            Insect
-          </button>
+          {categories.map((cat, index) => {
+            return (
+              <button
+                key={index}
+                className="focus:text-green-600 text-red-600 p-6 py-2 font-medium rounded-full border-2 border-red-600 focus:border-green-600"
+                onClick={() => {
+                  setCategory(cat);
+                  filterAnimal();
+                }}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
 
         {/* Right Section */}
@@ -217,7 +193,6 @@ export default function Home() {
           <h5 className="text-gray-900 text-lg outline-none">Add Category</h5>
           <select
             className="bg-gray-300 text-gray-900"
-            disabled={!active}
             onChange={(e: ChangeEvent<HTMLSelectElement>) => SelectCategory(e)}
           >
             <option value="Land Animal">Land Animal</option>
@@ -229,15 +204,15 @@ export default function Home() {
           <button
             className="bg-black text-white py-2 rounded-lg"
             onClick={() => {
+              toggleAddCategoryModal();
               handleSubmit();
-              setActive(!active);
             }}
           >
             Save
           </button>
         </div>
       )}
-      <div className="flex absolute top-40 flex-wrap">
+      <div className="flex absolute top-40 flex-wrap bg-black">
         {allData &&
           allData.map((data, index) => (
             <div
