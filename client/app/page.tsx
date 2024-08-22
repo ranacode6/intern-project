@@ -1,8 +1,12 @@
 'use client';
 
+import AddAnimalAndCategory from '@/components/AddAnimalAndCategory';
+import AddAnimalModal from '@/components/AddAnimalModal';
+import AddCategoryModal from '@/components/AddCategoryModal';
+import AllImageSection from '@/components/AllImageSection';
+import Categories from '@/components/Categories';
 import axios from 'axios';
-import Image from 'next/image';
-import { useState, ChangeEvent, useEffect } from 'react';
+import { useState, ChangeEvent, useEffect, FormEvent } from 'react';
 
 // Define types for data used in the component
 interface AnimalData {
@@ -11,22 +15,25 @@ interface AnimalData {
   file: string;
 }
 
+interface Category {
+  categoryName: string;
+}
 export default function Home() {
-  const categories = ['Land Animal', 'Bird', 'Fish', 'Insect'];
   const [file, setFile] = useState<string>('');
-  const [category, setCategory] = useState<string>('');
+  const [uploading, setUploading] = useState<boolean>(false);
   const [animalName, setAnimalName] = useState<string>('');
   const [categoryName, setCategoryName] = useState<string>('');
-  const [allData, setAllData] = useState<AnimalData[] | null>(null);
+  const [allData, setAllData] = useState<AnimalData[]>([]);
+  const [filteredData, setFilteredData] = useState<AnimalData[]>([]);
+  const [allCategory, setAllCategory] = useState<Category[] | null>(null);
 
   const [addAnimalModal, setAddAnimalModal] = useState<boolean>(false);
   const [addCategoryModal, setCategoryModal] = useState<boolean>(false);
 
-  const toggleAddAnimalModal = () => setAddAnimalModal((prev) => !prev);
-  const toggleAddCategoryModal = () => setCategoryModal((prev) => !prev);
+  const toggleAddAnimalModal = () => setAddAnimalModal(!addAnimalModal);
+  const toggleAddCategoryModal = () => setCategoryModal(!addCategoryModal);
 
   const convertToBase64 = async (e: ChangeEvent<HTMLInputElement>) => {
-    console.log(e);
     const image = e.target.files?.[0];
     if (!image) {
       console.log('no file selected');
@@ -36,7 +43,6 @@ export default function Home() {
     reader.readAsDataURL(image);
     reader.onload = () => {
       if (reader.result && typeof reader.result === 'string') {
-        console.log(reader.result);
         setFile(reader.result);
       }
     };
@@ -45,191 +51,123 @@ export default function Home() {
     };
   };
 
-  const SelectCategory = async (e: ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = e.target.value;
-    setCategoryName(selectedValue);
+  const handleAnimalSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setUploading(true);
+    await axios
+      .post(`${process.env.NEXT_PUBLIC_SERVER_URL}/create-animal`, {
+        animalName,
+        categoryName,
+        file,
+      })
+      .then((res) => {
+        setUploading(false);
+        alert(res.data.message);
+        setAddAnimalModal(true);
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.log(error);
+        setUploading(false);
+      });
   };
 
-  const filterAnimal = async () => {
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/filter`,
-        {
-          category,
-        }
-      );
-      setAllData(response.data.data);
-    } catch (err) {
-      console.error('Error filtering animals:', err);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (file) {
-      const formData = new FormData();
-      formData.append('animalName', animalName);
-      formData.append('categoryName', categoryName);
-      formData.append('file', file);
-
-      await axios
-        .post(`${process.env.NEXT_PUBLIC_SERVER_URL}/upload`, {
-          animalName,
-          categoryName,
-          file,
-        })
-        .then((res) => {
-          alert(res.data.message);
-          window.location.reload();
-        });
-    }
+  const handleCategorySubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setUploading(true);
+    await axios
+      .post(`${process.env.NEXT_PUBLIC_SERVER_URL}/create-category`, {
+        categoryName,
+      })
+      .then((res) => {
+        setUploading(false);
+        alert(res.data.message);
+        setAddAnimalModal(true);
+        window.location.reload();
+      })
+      .catch((error) => console.log(error));
   };
 
   const getAllData = async () => {
-    const result = await axios.get(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/getAllData`,
-      {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }
-    );
     try {
+      const result = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/getAllData`,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      );
       setAllData(result.data.data);
+      setFilteredData(result.data.data);
     } catch (error) {
       console.log('Error getting Data', error);
     }
   };
 
+  const filterByCategory = (cat: string) => {
+    const filtered = allData.filter(
+      (data) => data.categoryName.toLowerCase() === cat.toLowerCase()
+    );
+    setFilteredData(filtered);
+  };
+
+  const getAllCategory = async () => {
+    try {
+      const result = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/getAllCategory`,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+
+      setAllCategory(result.data.data);
+    } catch (error) {
+      console.log('Error getting category', error);
+    }
+  };
+
   useEffect(() => {
     getAllData();
+    getAllCategory();
   }, []);
 
   return (
-    <main className="flex flex-col h-auto max-w-[1440px] relative">
-      {/* <div className="mx-auto"> */}
-      <div className="flex flex-col lg:flex-row py-12 justify-center">
-        {/* Left Section */}
-        <div className="flex w-2/3 h-fit gap-10">
-          {categories.map((cat, index) => {
-            return (
-              <button
-                key={index}
-                className="focus:text-green-600 text-red-600 p-6 py-2 font-medium rounded-full border-2 border-red-600 focus:border-green-600"
-                onClick={() => {
-                  setCategory(cat);
-                  filterAnimal();
-                }}
-              >
-                {cat}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Right Section */}
-        <div className="w-full px-2 lg:w-1/3 h-fit flex gap-10">
-          <button
-            className="text-white p-6 py-2 font-medium rounded-full border-2 border-white"
-            onClick={toggleAddAnimalModal}
-          >
-            Add Animal
-          </button>
-          <button
-            className="text-white p-6 py-2 font-medium rounded-full border-2 border-white"
-            onClick={toggleAddCategoryModal}
-          >
-            Add Category
-          </button>
-        </div>
-      </div>
-
-      {/* Modal For Add Animal */}
-      {addAnimalModal && (
-        <div
-          className="flex flex-col mx-auto bg-white rounded-3xl max-w-sm mt-24 p-8 gap-4 z-40"
-          id="animalModal"
-        >
-          <h5 className="text-gray-900 text-lg">Add Animal</h5>
-          <input
-            type="text"
-            placeholder="Animal Name"
-            value={animalName}
-            onChange={(e) => setAnimalName(e.target.value)}
-            required
-            className="bg-gray-200 p-2 rounded-md placeholder-gray-900 text-gray-900"
+    <main className="w-full relative">
+      <div className="flex flex-col items-center justify-center h-auto">
+        <div className="flex flex-col lg:flex-row py-12 gap-10">
+          {/* Left Section */}
+          <Categories
+            allCategory={allCategory}
+            filterByCategory={filterByCategory}
           />
-          <div className="flex justify-between items-center bg-gray-200 rounded-md cursor-pointer">
-            <label htmlFor="files" className="w-full text-gray-900 p-2">
-              Image
-            </label>
-            {file == '' || file == null ? (
-              <label
-                htmlFor="files"
-                className="text-gray-900 m-2 p-1 rounded-md ml-auto bg-zinc-300 text-center"
-              >
-                Upload
-              </label>
-            ) : (
-              <Image src={file} alt="Seclected Image" width={50} height={50} />
-            )}
-            <input
-              type="file"
-              onChange={convertToBase64}
-              id="files"
-              className="hidden"
-              required
-            />
-          </div>
 
-          <button
-            className="bg-black text-white py-2 rounded-lg"
-            onClick={toggleAddAnimalModal}
-          >
-            Create Animal
-          </button>
+          {/* Right Section */}
+          <AddAnimalAndCategory
+            toggleAddAnimalModal={toggleAddAnimalModal}
+            toggleAddCategoryModal={toggleAddCategoryModal}
+          />
         </div>
-      )}
-      {/* Modal For Add Category */}
-      {addCategoryModal && (
-        <div className="flex flex-col mx-auto bg-white rounded-3xl max-w-sm mt-24 p-8 gap-4 z-40">
-          <h5 className="text-gray-900 text-lg outline-none">Add Category</h5>
-          <select
-            className="bg-gray-300 text-gray-900"
-            onChange={(e: ChangeEvent<HTMLSelectElement>) => SelectCategory(e)}
-          >
-            <option value="Land Animal">Land Animal</option>
-            <option value="Bird">Bird</option>
-            <option value="Fish">Fish</option>
-            <option value="Insect">Insect</option>
-          </select>
 
-          <button
-            className="bg-black text-white py-2 rounded-lg"
-            onClick={() => {
-              toggleAddCategoryModal();
-              handleSubmit();
-            }}
-          >
-            Save
-          </button>
-        </div>
-      )}
-      <div className="flex absolute top-40 flex-wrap bg-black">
-        {allData &&
-          allData.map((data, index) => (
-            <div
-              key={index}
-              className="flex flex-col gap-10 items-center justify-end z-10 mr-20 mb-10"
-            >
-              {data.file && (
-                <Image
-                  src={data.file}
-                  alt={data.animalName}
-                  width={150}
-                  height={150}
-                />
-              )}
-              <h5 className="uppercase">{data.animalName}</h5>
-            </div>
-          ))}
+        {/* Modal For Add Animal */}
+        <AddAnimalModal
+          addAnimalModal={addAnimalModal}
+          setAnimalName={setAnimalName}
+          setCategoryName={setCategoryName}
+          convertToBase64={convertToBase64}
+          animalName={animalName}
+          allCategory={allCategory}
+          toggleAddAnimalModal={toggleAddAnimalModal}
+          handleAnimalSubmit={handleAnimalSubmit}
+          uploading={uploading}
+        />
+
+        {/* Modal For Add Category */}
+        <AddCategoryModal
+          addCategoryModal={addCategoryModal}
+          setCategoryName={setCategoryName}
+          handleCategorySubmit={handleCategorySubmit}
+          toggleAddCategoryModal={toggleAddCategoryModal}
+          uploading={uploading}
+        />
+        {/* All Image Section */}
+        <AllImageSection filteredData={filteredData} />
       </div>
     </main>
   );

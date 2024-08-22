@@ -10,6 +10,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'intern-project-3uzm.onrender.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
     ],
   },
 };
