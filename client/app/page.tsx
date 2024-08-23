@@ -91,7 +91,7 @@ export default function Home() {
   const getAllData = async () => {
     try {
       const result = await axios.get(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/getAllData`,
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/getAnimals`,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
         }

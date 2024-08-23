@@ -5,8 +5,10 @@ const cors = require('cors');
 const cloudinary = require('cloudinary').v2;
 
 const connectDatabase = require('./database/db.js');
-const Animal = require('./model/animalModel.js');
-const Category = require('./model/categoryModel.js');
+const Animal = require('./models/animalModel.js');
+const Category = require('./models/categoryModel.js');
+const animalRoute = require('./routes/animalRoute.js');
+const categoryRoute = require('./routes/categoryRoute.js');
 const app = express();
 
 dotenv.config();
@@ -28,54 +30,8 @@ const corsConfig = {
 };
 app.use(cors(corsConfig));
 
-// Post to mongodb
-app.post('/create-animal', async (req, res) => {
-  try {
-    const result = await cloudinary.uploader.upload(req.body.file);
-    await Animal.create({
-      animalName: req.body.animalName,
-      categoryName: req.body.categoryName,
-      file: result.secure_url,
-    });
-
-    return res.json({ message: 'Category Created Successfully' });
-  } catch (error) {
-    return res.json(error);
-  }
-});
-
-app.post('/create-category', async (req, res) => {
-  try {
-    const newCateogry = await Category.create({
-      categoryName: req.body.categoryName,
-    });
-
-    return res.send({ message: 'Category Created', newCategory: newCateogry });
-  } catch (error) {
-    return res.send(error);
-  }
-});
-
-// Get Data from MongoDB
-app.get('/getAllData', async (req, res) => {
-  try {
-    const allData = await Animal.find({});
-
-    return res.send({ data: allData });
-  } catch (error) {
-    return res.json(error);
-  }
-});
-
-// Get All Category from MongoDB
-app.get('/getAllCategory', async (req, res) => {
-  try {
-    const allCategory = await Category.find({});
-    return res.send({ data: allCategory });
-  } catch (error) {
-    return res.json(error);
-  }
-});
+app.use('', animalRoute);
+app.use('', categoryRoute);
 
 const PORT = 8000;
 
