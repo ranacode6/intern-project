@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const cloudinary = require('cloudinary').v2;
 
-const connectDatabase = require('./database/db.js');
+const { connectDatabase } = require('./database/db.js');
 const Animal = require('./models/animalModel.js');
 const Category = require('./models/categoryModel.js');
 const animalRoute = require('./routes/animalRoute.js');
